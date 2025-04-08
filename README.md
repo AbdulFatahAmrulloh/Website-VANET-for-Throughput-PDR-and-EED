@@ -15,3 +15,5 @@ Configurable simulation parameters including vehicle speed and count.
 
 This repository provides all necessary files, including the simulation configuration, scripts, and web interface, enabling users to run the simulation and observe network performance metrics.
 
+
+![Image](https://github.com/user-attachments/assets/848fb01a-751d-4a15-b4b3-4f518e309536)
