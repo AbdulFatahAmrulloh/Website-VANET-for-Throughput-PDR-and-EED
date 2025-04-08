@@ -14,3 +14,4 @@ Web interface for easy interaction and visualization of simulation results.
 Configurable simulation parameters including vehicle speed and count.
 
 This repository provides all necessary files, including the simulation configuration, scripts, and web interface, enabling users to run the simulation and observe network performance metrics.
+![Uploading image.png…]()
