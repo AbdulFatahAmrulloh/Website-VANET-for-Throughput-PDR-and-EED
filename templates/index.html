@@ -1,0 +1,152 @@
+{% extends 'layout.html' %}
+
+{% block head %}
+<title>Dashboard - OMNeT++/Veins Visualization</title>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-tachometer-alt me-2"></i>Real-time Network Metrics
+                </h5>
+                <div>
+                    <button id="clearDataBtn" class="btn btn-outline-secondary btn-sm">
+                        <i class="fas fa-trash me-1"></i>Clear Data
+                    </button>
+                    <button id="saveDataBtn" class="btn btn-primary btn-sm ms-2">
+                        <i class="fas fa-save me-1"></i>Save Data
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <!-- Throughput Metric Card -->
+                    <div class="col-md-4 mb-3">
+                        <div class="card metric-card h-100 bg-dark text-white">
+                            <div class="card-body text-center">
+                                <h5 class="card-title">
+                                    <i class="fas fa-exchange-alt me-2 text-primary"></i>Throughput
+                                </h5>
+                                <p id="throughputValue" class="metric-value">0 Mbps</p>
+                                <p class="metric-label text-muted">Network data transfer rate</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- PDR Metric Card -->
+                    <div class="col-md-4 mb-3">
+                        <div class="card metric-card h-100 bg-dark text-white">
+                            <div class="card-body text-center">
+                                <h5 class="card-title">
+                                    <i class="fas fa-percentage me-2 text-success"></i>PDR
+                                </h5>
+                                <p id="pdrValue" class="metric-value">0%</p>
+                                <p class="metric-label text-muted">Packet Delivery Ratio</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- EED Metric Card -->
+                    <div class="col-md-4 mb-3">
+                        <div class="card metric-card h-100 bg-dark text-white">
+                            <div class="card-body text-center">
+                                <h5 class="card-title">
+                                    <i class="fas fa-clock me-2 text-danger"></i>EED
+                                </h5>
+                                <p id="eedValue" class="metric-value">0 ms</p>
+                                <p class="metric-label text-muted">End-to-End Delay</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Throughput Chart -->
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-line me-2 text-primary"></i>Throughput
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="throughputChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- PDR Chart -->
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-line me-2 text-success"></i>Packet Delivery Ratio
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="pdrChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- EED Chart -->
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-line me-2 text-danger"></i>End-to-End Delay
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="eedChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>About the Metrics
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <h6><i class="fas fa-exchange-alt me-2 text-primary"></i>Throughput</h6>
+                        <p>Measures the rate of successful data transfer over a communication channel, expressed in Megabits per second (Mbps). Higher throughput generally indicates better network performance.</p>
+                    </div>
+                    <div class="col-md-4">
+                        <h6><i class="fas fa-percentage me-2 text-success"></i>Packet Delivery Ratio (PDR)</h6>
+                        <p>The ratio of successfully delivered data packets to destination nodes compared to the number of packets sent by source nodes. Expressed as a percentage, with higher values indicating better reliability.</p>
+                    </div>
+                    <div class="col-md-4">
+                        <h6><i class="fas fa-clock me-2 text-danger"></i>End-to-End Delay (EED)</h6>
+                        <p>The time taken for a packet to be transmitted across a network from source to destination, measured in milliseconds (ms). Lower values indicate better network responsiveness.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}

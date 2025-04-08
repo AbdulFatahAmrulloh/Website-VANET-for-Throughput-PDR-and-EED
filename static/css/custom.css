@@ -1,0 +1,129 @@
+/* Custom styles for the OMNeT++/Veins Visualization Platform */
+
+/* Dashboard layout */
+.dashboard-container {
+    padding: 1rem;
+}
+
+/* Chart containers */
+.chart-container {
+    position: relative;
+    height: 250px;
+    margin-bottom: 1.5rem;
+}
+
+/* Metric cards */
+.metric-card {
+    border-radius: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.metric-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.metric-value {
+    font-size: 2rem;
+    font-weight: bold;
+}
+
+.metric-label {
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+/* Status indicators */
+.status-indicator {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.5rem;
+    border-radius: 0.25rem;
+}
+
+/* Simulation control panel */
+.control-panel {
+    padding: 1rem;
+    border-radius: 0.5rem;
+}
+
+.control-panel .form-group {
+    margin-bottom: 1rem;
+}
+
+/* Alerts container */
+#alerts {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1050;
+    width: 300px;
+}
+
+/* Historical data comparison */
+.history-card {
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+}
+
+.history-card:hover {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+/* Responsive adjustments */
+@media (max-width: 767.98px) {
+    .metric-value {
+        font-size: 1.5rem;
+    }
+    
+    .chart-container {
+        height: 200px;
+    }
+}
+
+/* Tooltip customization */
+.tooltip-inner {
+    max-width: 200px;
+    padding: 0.5rem;
+    background-color: var(--bs-dark);
+}
+
+/* Loading spinner */
+.loading-spinner {
+    width: 3rem;
+    height: 3rem;
+}
+
+/* Navbar custom styling */
+.navbar-brand {
+    font-weight: bold;
+}
+
+/* Footer styling */
+.footer {
+    padding: 1rem 0;
+    margin-top: 2rem;
+    font-size: 0.9rem;
+}
+
+/* Improved button focus states */
+.btn:focus {
+    box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.25);
+}
+
+/* Node visualization (for future implementation) */
+.node-visualization {
+    position: relative;
+    width: 100%;
+    height: 400px;
+    background-color: rgba(0, 0, 0, 0.05);
+    border-radius: 0.5rem;
+}
+
+/* Code styling for configuration display */
+pre.config-code {
+    border-radius: 0.5rem;
+    padding: 1rem;
+    max-height: 300px;
+    overflow-y: auto;
+}

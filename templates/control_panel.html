@@ -1,0 +1,157 @@
+{% extends 'layout.html' %}
+
+{% block head %}
+<title>Control Panel - OMNeT++/Veins Visualization</title>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-plug me-2"></i>Simulation Connection
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="simulationHost" class="form-label">Host</label>
+                            <input type="text" class="form-control" id="simulationHost" placeholder="localhost" value="localhost">
+                            <div class="form-text">IP address or hostname of the OMNeT++/Veins simulation</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="simulationPort" class="form-label">Port</label>
+                            <input type="number" class="form-control" id="simulationPort" placeholder="4242" value="4242">
+                            <div class="form-text">Port number for the simulation connection</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex gap-2">
+                    <button id="connectBtn" class="btn btn-success">
+                        <i class="fas fa-plug me-1"></i>Connect
+                    </button>
+                    <button id="disconnectBtn" class="btn btn-danger" disabled>
+                        <i class="fas fa-unlink me-1"></i>Disconnect
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-sliders me-2"></i>Simulation Control
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <button id="startBtn" class="btn btn-primary" disabled>
+                        <i class="fas fa-play me-1"></i>Start Simulation
+                    </button>
+                    <button id="stopBtn" class="btn btn-danger" disabled>
+                        <i class="fas fa-stop me-1"></i>Stop Simulation
+                    </button>
+                    <button id="pauseBtn" class="btn btn-warning" disabled>
+                        <i class="fas fa-pause me-1"></i>Pause Simulation
+                    </button>
+                    <button id="resumeBtn" class="btn btn-success" disabled>
+                        <i class="fas fa-play me-1"></i>Resume Simulation
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-cog me-2"></i>Simulation Parameters
+                </h5>
+            </div>
+            <div class="card-body">
+                <form>
+                    <div class="mb-3">
+                        <label for="mobilitySpeed" class="form-label">Mobility Speed (m/s)</label>
+                        <input type="number" class="form-control" id="mobilitySpeed" placeholder="Enter mobility speed" value="1.5">
+                    </div>
+                    <div class="mb-3">
+                        <label for="nodeCount" class="form-label">Number of Nodes</label>
+                        <input type="number" class="form-control" id="nodeCount" placeholder="Enter node count" value="10">
+                    </div>
+                    <div class="mb-3">
+                        <label for="packetSize" class="form-label">Packet Size (bytes)</label>
+                        <input type="number" class="form-control" id="packetSize" placeholder="Enter packet size" value="512">
+                    </div>
+                    <div class="mb-3">
+                        <label for="txPower" class="form-label">Transmission Power (mW)</label>
+                        <input type="number" class="form-control" id="txPower" placeholder="Enter transmission power" value="20">
+                    </div>
+                    <button type="button" id="applyParamsBtn" class="btn btn-primary" disabled>
+                        <i class="fas fa-check me-1"></i>Apply Parameters
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>OMNeT++/Veins Integration Guide
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info" role="alert">
+                    <h6 class="alert-heading"><i class="fas fa-lightbulb me-2"></i>Getting Started</h6>
+                    <p>This control panel allows you to connect to and control an OMNeT++/Veins simulation. Follow these steps to get started:</p>
+                    <ol>
+                        <li>Ensure your OMNeT++/Veins simulation is configured to expose a TCP interface.</li>
+                        <li>Enter the host and port information for your simulation.</li>
+                        <li>Click "Connect" to establish a connection to the simulation.</li>
+                        <li>Use the control buttons to start, stop, pause, or resume the simulation.</li>
+                        <li>Adjust simulation parameters as needed and click "Apply Parameters" to update the simulation.</li>
+                    </ol>
+                </div>
+                
+                <h6><i class="fas fa-code me-2"></i>Example OMNeT++ Integration Code</h6>
+                <pre class="config-code bg-dark text-light"><code>// In your OMNeT++ module:
+void YourModule::initialize() {
+    // Initialize TCP server
+    cSocketRTScheduler *scheduler = check_and_cast&lt;cSocketRTScheduler *&gt;(simulation.getScheduler());
+    scheduler->setPort(4242);
+    
+    // Register for data collection
+    scheduler->setDataCallback(this);
+}
+
+// Implement data collection callback
+void YourModule::handleData(const char *data, int length) {
+    // Process command and respond with metrics
+    std::string response = "{\"throughput\": " + std::to_string(calculateThroughput()) + ", ";
+    response += "\"pdr\": " + std::to_string(calculatePDR()) + ", ";
+    response += "\"eed\": " + std::to_string(calculateEED()) + "}";
+    
+    // Send response back
+    scheduler->sendBack(response.c_str(), response.length());
+}</code></pre>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/simulation.js') }}"></script>
+{% endblock %}

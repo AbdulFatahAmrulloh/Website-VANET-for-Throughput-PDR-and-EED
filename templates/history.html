@@ -1,0 +1,465 @@
+{% extends 'layout.html' %}
+
+{% block head %}
+<title>Historical Data - OMNeT++/Veins Visualization</title>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-history me-2"></i>Historical Data Comparison
+                </h5>
+                <div>
+                    <button id="refreshHistoryBtn" class="btn btn-outline-secondary btn-sm">
+                        <i class="fas fa-sync-alt me-1"></i>Refresh
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div id="noHistoryMessage" class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>No historical data available. Run and save simulations from the Dashboard to compare them here.
+                </div>
+                
+                <div id="historicalDataContainer" class="row" style="display: none;">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Throughput Comparison Chart -->
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-bar me-2 text-primary"></i>Throughput Comparison
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="throughputComparisonChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- PDR Comparison Chart -->
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-bar me-2 text-success"></i>PDR Comparison
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="pdrComparisonChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- EED Comparison Chart -->
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-bar me-2 text-danger"></i>EED Comparison
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="eedComparisonChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-table me-2"></i>Detailed Metrics Comparison
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover" id="comparisonTable">
+                        <thead>
+                            <tr>
+                                <th>Simulation Name</th>
+                                <th>Avg Throughput (Mbps)</th>
+                                <th>Avg PDR (%)</th>
+                                <th>Avg EED (ms)</th>
+                                <th>Min Throughput</th>
+                                <th>Max Throughput</th>
+                                <th>Min PDR</th>
+                                <th>Max PDR</th>
+                                <th>Min EED</th>
+                                <th>Max EED</th>
+                                <th>Data Points</th>
+                            </tr>
+                        </thead>
+                        <tbody id="comparisonTableBody">
+                            <!-- Will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('History page initialized');
+    
+    // Initialize charts
+    let throughputComparisonChart;
+    let pdrComparisonChart;
+    let eedComparisonChart;
+    
+    initCharts();
+    loadHistoricalData();
+    
+    // Refresh button event handler
+    document.getElementById('refreshHistoryBtn').addEventListener('click', loadHistoricalData);
+    
+    // Initialize charts
+    function initCharts() {
+        const commonOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'top',
+                }
+            }
+        };
+        
+        // Throughput Comparison Chart
+        throughputComparisonChart = new Chart(
+            document.getElementById('throughputComparisonChart').getContext('2d'),
+            {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: []
+                },
+                options: {
+                    ...commonOptions,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Mbps'
+                            }
+                        }
+                    }
+                }
+            }
+        );
+        
+        // PDR Comparison Chart
+        pdrComparisonChart = new Chart(
+            document.getElementById('pdrComparisonChart').getContext('2d'),
+            {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: []
+                },
+                options: {
+                    ...commonOptions,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 1,
+                            title: {
+                                display: true,
+                                text: 'Ratio (0-1)'
+                            }
+                        }
+                    }
+                }
+            }
+        );
+        
+        // EED Comparison Chart
+        eedComparisonChart = new Chart(
+            document.getElementById('eedComparisonChart').getContext('2d'),
+            {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: []
+                },
+                options: {
+                    ...commonOptions,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'ms'
+                            }
+                        }
+                    }
+                }
+            }
+        );
+    }
+    
+    // Load historical data from the server
+    function loadHistoricalData() {
+        fetch('/api/data/history')
+            .then(response => response.json())
+            .then(data => {
+                updateHistoricalDataDisplay(data);
+            })
+            .catch(error => {
+                console.error('Error loading historical data:', error);
+                showAlert('Error loading historical data', 'danger');
+            });
+    }
+    
+    // Update the historical data display with the loaded data
+    function updateHistoricalDataDisplay(data) {
+        const simNames = Object.keys(data);
+        
+        // Check if we have any historical data
+        if (simNames.length === 0) {
+            document.getElementById('noHistoryMessage').style.display = 'block';
+            document.getElementById('historicalDataContainer').style.display = 'none';
+            
+            // Reset charts
+            updateComparisonCharts({});
+            updateComparisonTable({});
+            return;
+        }
+        
+        // Hide no data message, show container
+        document.getElementById('noHistoryMessage').style.display = 'none';
+        document.getElementById('historicalDataContainer').style.display = 'flex';
+        
+        // Process the data for comparison
+        const processedData = processHistoricalData(data);
+        
+        // Update the comparison charts
+        updateComparisonCharts(processedData);
+        
+        // Update the comparison table
+        updateComparisonTable(processedData);
+        
+        // Generate history cards
+        generateHistoryCards(data);
+    }
+    
+    // Generate history cards for each saved simulation
+    function generateHistoryCards(data) {
+        const container = document.getElementById('historicalDataContainer');
+        container.innerHTML = '';
+        
+        Object.keys(data).forEach(simName => {
+            const simData = data[simName];
+            const numDataPoints = simData.throughput ? simData.throughput.length : 0;
+            
+            const cardHtml = `
+                <div class="col-md-4 mb-3">
+                    <div class="card history-card">
+                        <div class="card-header bg-dark">
+                            <h6 class="mb-0">${simName}</h6>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Data Points:</strong> ${numDataPoints}</p>
+                            <p><strong>Last Updated:</strong> ${simData.timestamps ? new Date(simData.timestamps[simData.timestamps.length - 1] * 1000).toLocaleString() : 'N/A'}</p>
+                            <button class="btn btn-sm btn-primary view-details-btn" data-sim-name="${simName}">
+                                <i class="fas fa-eye me-1"></i>View Details
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            container.innerHTML += cardHtml;
+        });
+        
+        // Add event listeners to view details buttons
+        document.querySelectorAll('.view-details-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const simName = this.getAttribute('data-sim-name');
+                // Future implementation: Show detailed view of a specific simulation
+                showAlert(`Detailed view for "${simName}" will be implemented in a future update.`, 'info');
+            });
+        });
+    }
+    
+    // Process historical data for comparison
+    function processHistoricalData(data) {
+        const processedData = {};
+        
+        Object.keys(data).forEach(simName => {
+            const simData = data[simName];
+            
+            // Calculate statistics for each metric
+            processedData[simName] = {
+                throughput: calculateStatistics(simData.throughput || []),
+                pdr: calculateStatistics(simData.pdr || []),
+                eed: calculateStatistics(simData.eed || []),
+                dataPoints: simData.throughput ? simData.throughput.length : 0
+            };
+        });
+        
+        return processedData;
+    }
+    
+    // Calculate statistics for a data series
+    function calculateStatistics(data) {
+        if (!data || data.length === 0) {
+            return { avg: 0, min: 0, max: 0, median: 0 };
+        }
+        
+        const sortedData = [...data].sort((a, b) => a - b);
+        const min = sortedData[0];
+        const max = sortedData[sortedData.length - 1];
+        const sum = sortedData.reduce((acc, val) => acc + val, 0);
+        const avg = sum / sortedData.length;
+        
+        // Calculate median
+        let median;
+        const mid = Math.floor(sortedData.length / 2);
+        if (sortedData.length % 2 === 0) {
+            median = (sortedData[mid - 1] + sortedData[mid]) / 2;
+        } else {
+            median = sortedData[mid];
+        }
+        
+        return { avg, min, max, median };
+    }
+    
+    // Update comparison charts with processed data
+    function updateComparisonCharts(processedData) {
+        const simNames = Object.keys(processedData);
+        
+        // Colors for the charts
+        const colors = [
+            'rgba(54, 162, 235, 0.7)',
+            'rgba(75, 192, 192, 0.7)',
+            'rgba(255, 99, 132, 0.7)',
+            'rgba(255, 159, 64, 0.7)',
+            'rgba(153, 102, 255, 0.7)',
+            'rgba(255, 205, 86, 0.7)',
+            'rgba(201, 203, 207, 0.7)'
+        ];
+        
+        // Update Throughput Chart
+        throughputComparisonChart.data.labels = ['Average', 'Minimum', 'Maximum'];
+        throughputComparisonChart.data.datasets = simNames.map((simName, index) => {
+            const colorIndex = index % colors.length;
+            return {
+                label: simName,
+                data: [
+                    processedData[simName].throughput.avg,
+                    processedData[simName].throughput.min,
+                    processedData[simName].throughput.max
+                ],
+                backgroundColor: colors[colorIndex]
+            };
+        });
+        throughputComparisonChart.update();
+        
+        // Update PDR Chart (convert to percentage for display)
+        pdrComparisonChart.data.labels = ['Average', 'Minimum', 'Maximum'];
+        pdrComparisonChart.data.datasets = simNames.map((simName, index) => {
+            const colorIndex = index % colors.length;
+            return {
+                label: simName,
+                data: [
+                    processedData[simName].pdr.avg,
+                    processedData[simName].pdr.min,
+                    processedData[simName].pdr.max
+                ],
+                backgroundColor: colors[colorIndex]
+            };
+        });
+        pdrComparisonChart.update();
+        
+        // Update EED Chart
+        eedComparisonChart.data.labels = ['Average', 'Minimum', 'Maximum'];
+        eedComparisonChart.data.datasets = simNames.map((simName, index) => {
+            const colorIndex = index % colors.length;
+            return {
+                label: simName,
+                data: [
+                    processedData[simName].eed.avg,
+                    processedData[simName].eed.min,
+                    processedData[simName].eed.max
+                ],
+                backgroundColor: colors[colorIndex]
+            };
+        });
+        eedComparisonChart.update();
+    }
+    
+    // Update comparison table with processed data
+    function updateComparisonTable(processedData) {
+        const tableBody = document.getElementById('comparisonTableBody');
+        tableBody.innerHTML = '';
+        
+        Object.keys(processedData).forEach(simName => {
+            const data = processedData[simName];
+            const row = document.createElement('tr');
+            
+            row.innerHTML = `
+                <td>${simName}</td>
+                <td>${data.throughput.avg.toFixed(2)}</td>
+                <td>${(data.pdr.avg * 100).toFixed(2)}%</td>
+                <td>${data.eed.avg.toFixed(2)}</td>
+                <td>${data.throughput.min.toFixed(2)}</td>
+                <td>${data.throughput.max.toFixed(2)}</td>
+                <td>${(data.pdr.min * 100).toFixed(2)}%</td>
+                <td>${(data.pdr.max * 100).toFixed(2)}%</td>
+                <td>${data.eed.min.toFixed(2)}</td>
+                <td>${data.eed.max.toFixed(2)}</td>
+                <td>${data.dataPoints}</td>
+            `;
+            
+            tableBody.appendChild(row);
+        });
+    }
+    
+    // Show alert message
+    function showAlert(message, type = 'info') {
+        const alertsContainer = document.getElementById('alerts');
+        if (alertsContainer) {
+            const alertId = 'alert-' + Date.now();
+            const alertHtml = `
+                <div id="${alertId}" class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            `;
+            alertsContainer.innerHTML += alertHtml;
+            
+            // Auto-dismiss after 5 seconds
+            setTimeout(() => {
+                const alertElement = document.getElementById(alertId);
+                if (alertElement) {
+                    alertElement.remove();
+                }
+            }, 5000);
+        }
+    }
+});
+</script>
+{% endblock %}
